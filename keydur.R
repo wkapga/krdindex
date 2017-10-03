@@ -50,3 +50,34 @@ keydur <- function(ttm,coupon,yield,freq,keyrates,targetdur) {
   }
   return(k)
 } 
+
+
+keydur2 <- function(ttm,coupon,yield,freq,keyrates,targetdur) {
+  # function to calculate vector of key rate duarations for given keyrates
+  # coupon, yield in percent, target duration is optional
+  keyrates <- c(0, keyrates , 10e3) # add keyrate at 0 and far in future
+  tt <- seq((ttm*freq - floor(ttm*freq))/freq, ttm, by = 1/freq ) # vector of occurence of cashflow in time
+  cf <- rep(coupon/freq/100, length(tt)) + c( rep(0, length(tt)-1), 1) # cash flows
+  
+  dcf <- cf * (1+yield/100)^(-tt) # discounted cash flows
+  vec <- dcf * tt / sum(dcf) 
+  
+  # duration would be sum(vev)
+  kw <- map_dfc(tt,~ as.data.frame(wg(keyrates,.x ))) %>% as.matrix() # get matrix of weights
+  k <- kw %*% vec # matrix multiplication
+  
+  k[length(k-1)] <- k[length(k-1)] + k[length(k)] # add keyrate far in future to last keyrate
+  k <- head(k,-1) # and then drop again
+  
+  k[2] <- sum(k[1:2]) # add keyrate at zero to first keyrate
+  k <- tail(k,-1) # and then drop again
+  
+  
+  if ( ! missing(targetdur) ) { # use stated duration if given
+    k <- k * targetdur/sum(k)
+  }
+  return(k)
+} 
+
+
+

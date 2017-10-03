@@ -24,4 +24,9 @@ emu_indexdata <- emu_indexdata %>% mutate(ttm=interval(date_of_index, mat) / dur
 #' add wgt
 emu_indexdata <- emu_indexdata %>% mutate(wgt=`MVal-EUR MM`/sum(`MVal-EUR MM`))
 
+#ttm,coupon,yield,freq,keyrates,targetdur
+emu_indexdata %>% select(ttm,Coupon,Yield,Freq,`Mac Dur`) %>% 
+  pmap(~ keydur(..1,..2,..3,..4,keyrates,..5)) %>% tibble -> emu_indexdata$krd
+
+ 
 # pmap_dbl(emu_indexdata$wgt,emu_indexdata)
