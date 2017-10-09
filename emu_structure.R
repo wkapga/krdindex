@@ -3,6 +3,8 @@ source("import.R")
 source("keydur.R")
 
 library(lubridate)
+library(knitr)
+library(janitor)
 
 #' keyrates
 keyrates <- c(2,5,7,10,15,30,100)
@@ -41,9 +43,10 @@ emu_indexdata %>% summarize( dur = sum( wgt*`Mac Dur`) )
 emu_indexdata %>% group_by(Country) %>% summarize( dur = sum(wgt*`Mac Dur`) )
 
 #' key rate duration by country
-emu_indexdata %>% select(Country,ISIN,krd,wgt) %>% unnest() %>% group_by(Country,kr) %>% summarize(sum(val*wgt))
+# emu_indexdata %>% select(Country,ISIN,krd,wgt) %>% unnest() %>% 
+#    group_by(Country,kr) %>% summarize(dur = sum(val*wgt)) %>% kable(digits=2)
 
+emu_indexdata %>% select(Country,ISIN,krd,wgt) %>% unnest() %>% 
+  group_by(Country,kr) %>% summarize(dur = sum(val*wgt)) %>% 
+  spread(kr,dur) %>% adorn_totals() %>% kable(digits=2)
 
-
-
-# emu_indexdata %>% select(krd) # %>%  pmap(~ ..1 * ..2[1]) 
