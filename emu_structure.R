@@ -29,19 +29,19 @@ emu_indexdata %>% select(ttm,Coupon,Yield,Freq,`Mac Dur`,ISIN) %>%
   pmap(~ keydur2(..1,..2,..3,..4,keyrates,..5)) -> emu_indexdata$krd
 
 #' add krd contrib
-emu_indexdata %>% mutate(wkrd = map(krd, ~ .x *wgt )) -> emu_indexdata
+# emu_indexdata %>% mutate(wkrd = map(krd, ~ .x *wgt )) -> emu_indexdata
 
 #' weights by country
 emu_indexdata %>% group_by(Country) %>% summarize((100*sum(wgt)))
 
 #' duration
-emu_indexdata %>% summarize( sum(wgt*`Mac Dur`) )
+emu_indexdata %>% summarize( dur = sum( wgt*`Mac Dur`) )
 
 #' duration by country
-emu_indexdata %>% group_by(Country) %>% summarize( sum(wgt*`Mac Dur`) )
+emu_indexdata %>% group_by(Country) %>% summarize( dur = sum(wgt*`Mac Dur`) )
 
-#' key rate duration
-emu_indexdata$wkrd %>% map(sum)
+#' key rate duration by country
+emu_indexdata %>% select(Country,ISIN,krd,wgt) %>% unnest() %>% group_by(Country,kr) %>% summarize(sum(val*wgt))
 
 
 
