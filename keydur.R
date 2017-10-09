@@ -20,7 +20,7 @@ wg2 <- function (keyrates,tt) {
   
   w <- modify_at(w,i, ~.x + (tt-keyrates[i-1] )/ (keyrates[i] - keyrates[i-1]) )
   w <- modify_at(w,i-1, ~.x + (keyrates[i]-tt )/ (keyrates[i] - keyrates[i-1]) )
-  
+  return(unlist(w))
   }
 
 
@@ -55,16 +55,23 @@ keydur <- function(ttm,coupon,yield,freq,keyrates,targetdur) {
 keydur2 <- function(ttm,coupon,yield,freq,keyrates,targetdur) {
   # function to calculate vector of key rate duarations for given keyrates
   # coupon, yield in percent, target duration is optional
-  keyrates <- c(0, keyrates , 10e3) # add keyrate at 0 and far in future
+  keyrates_expanded <- c(0, keyrates , 10e3) # add keyrate at 0 and far in future
   tt <- seq((ttm*freq - floor(ttm*freq))/freq, ttm, by = 1/freq ) # vector of occurence of cashflow in time
   cf <- rep(coupon/freq/100, length(tt)) + c( rep(0, length(tt)-1), 1) # cash flows
   
   dcf <- cf * (1+yield/100)^(-tt) # discounted cash flows
   vec <- dcf * tt / sum(dcf) 
   
-  # duration would be sum(vev)
-  kw <- map_dfc(tt,~ as.data.frame(wg(keyrates,.x ))) %>% as.matrix() # get matrix of weights
-  k <- kw %*% vec # matrix multiplication
+  # duration would be sum(vec)
+  #kw <- map_dfc(tt,~ as.data.frame(wg(keyrates_expanded ,.x ))) %>% as.matrix() 
+  #k <- kw %*% vec 
+  #kw <- map2_dfc(tt,vec, ~ wg2(keyrates_expanded ,.x ) * .y ) 
+  
+  kw <- map_dfc(tt, ~ as.tibble(wg2(keyrates_expanded,.x))) # get matrix of weights
+  k <- as.matrix(kw) %*% as.matrix(vec) %>% as.tibble %>%  flatten_dbl() # matrix multiplication
+  
+#  k <- map2_dfc(tt,vec,~ as.tibble(wg(keyrates_expanded ,.x )* .y)) %>% map_dfr(sum)
+
   
   k[length(k-1)] <- k[length(k-1)] + k[length(k)] # add keyrate far in future to last keyrate
   k <- head(k,-1) # and then drop again
@@ -76,7 +83,7 @@ keydur2 <- function(ttm,coupon,yield,freq,keyrates,targetdur) {
   if ( ! missing(targetdur) ) { # use stated duration if given
     k <- k * targetdur/sum(k)
   }
-  return(k)
+  return(tibble( kr = keyrates, val=k))
 } 
 
 
