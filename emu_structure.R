@@ -5,6 +5,8 @@ source("keydur.R")
 library(lubridate)
 library(knitr)
 library(janitor)
+library(xlsx)
+
 
 #' keyrates
 keyrates <- c(2,5,7,10,15,30,100)
@@ -48,5 +50,9 @@ emu_indexdata %>% group_by(Country) %>% summarize( dur = sum(wgt*`Mac Dur`) )
 
 emu_indexdata %>% select(Country,ISIN,krd,wgt) %>% unnest() %>% 
   group_by(Country,kr) %>% summarize(dur = sum(val*wgt)) %>% 
-  spread(kr,dur) %>% adorn_totals() %>% kable(digits=2)
+  spread(kr,dur) %>% adorn_totals() -> aa
 
+aa %>% kable(digits=2)
+
+
+write_excel_csv(aa,"/home/wkapga/thinclient_drives/G:/RSI/wkapga/tmp_krdindex1.csv")
