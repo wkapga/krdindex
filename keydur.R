@@ -49,7 +49,7 @@ keydur <- function(ttm,coupon,yield,freq,keyrates,targetdur) {
 keydur2 <- function(ttm,coupon,yield,freq,keyrates,targetdur) {
   # function to calculate vector of key rate duarations for given keyrates
   # coupon, yield in percent, target duration is optional
-  keyrates_expanded <- c(0, keyrates , 10e3) # add keyrate at 0 and far in future
+  keyrates_expanded <- c(0, keyrates , tail(keyrates,1)*100 ) # add keyrate at 0 and far in future
   tt <- seq((ttm*freq - floor(ttm*freq))/freq, ttm, by = 1/freq ) # vector of occurence of cashflow in time
   cf <- rep(coupon/freq/100, length(tt)) + c( rep(0, length(tt)-1), 1) # cash flows
   
