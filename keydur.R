@@ -37,17 +37,11 @@ keydur <- function(ttm,coupon,yield,freq,keyrates,targetdur) {
   # duration would be sum(vev)
   kw <- sapply(tt, function(x) wg(keyrates,x)) # get matrix of weights
   k <- kw %*% vec # matrix multiplication
+  # add keyrate at zero to first keyrate and add keyrate far in future to last keyrate
+  k <- c(sum(head(k,2)), k[3:(length(k)-2)], sum(tail(k,2)) )
   
-  k[length(k-1)] <- k[length(k-1)] + k[length(k)] # add keyrate far in future to last keyrate
-  k <- head(k,-1) # and then drop again
-  
-  k[2] <- sum(k[1:2]) # add keyrate at zero to first keyrate
-  k <- tail(k,-1) # and then drop again
-  
-  
-  if ( ! missing(targetdur) ) { # use stated duration if given
-    k <- k * targetdur/sum(k)
-  }
+  # use stated duration if given
+  if ( ! missing(targetdur) ) { k <- k * targetdur/sum(k)  }
   return(k)
 } 
 
@@ -65,15 +59,12 @@ keydur2 <- function(ttm,coupon,yield,freq,keyrates,targetdur) {
   kw <- map_dfc(tt, ~ as.tibble(wg2(keyrates_expanded,.x))) # get matrix of weights
   k <- as.matrix(kw) %*% as.matrix(vec) %>% as.tibble %>%  flatten_dbl() # matrix multiplication
   
-  k[length(k-1)] <- k[length(k-1)] + k[length(k)] # add keyrate far in future to last keyrate
-  k <- head(k,-1) # and then drop again
+  # add keyrate at zero to first keyrate and add keyrate far in future to last keyrate
+  k <- c(sum(head(k,2)), k[3:(length(k)-2)], sum(tail(k,2)) )
   
-  k[2] <- sum(k[1:2]) # add keyrate at zero to first keyrate
-  k <- tail(k,-1) # and then drop again
-  
-  if ( ! missing(targetdur) ) { # use stated duration if given
-    k <- k * targetdur/sum(k)
-  }
+  # use stated duration if given
+  if ( ! missing(targetdur) ) { k <- k * targetdur/sum(k)  }
+
   return(tibble( kr = keyrates, val=k))
 } 
 
