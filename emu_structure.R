@@ -1,15 +1,20 @@
 
 source("import.R")
-source("keydur.R")
 
 library(lubridate)
 library(knitr)
 library(janitor)
 library(xlsx)
+library(keyrateduration)
 
 
 #' keyrates
 keyrates <- c(2,5,7,10,15,30,100)
+#' path
+path_indexfiles <- "/home/wkapga/thinclient_drives/Z:/jpm/Kursversorgung/Jpm/Done"
+#' get file list 
+
+
 
 #' EMU Countries
 emu_countries <- c("AT","BE","FR","FI","DE","NL","IT","ES","IE","PT","GR")
@@ -30,7 +35,7 @@ emu_indexdata <- emu_indexdata %>% mutate(wgt= (`MVal-EUR MM`/sum(`MVal-EUR MM`)
 
 #' add krd
 emu_indexdata %>% select(ttm,Coupon,Yield,Freq,`Mac Dur`,ISIN) %>% 
-  pmap(~ keydur2(..1,..2,..3,..4,keyrates,..5)) -> emu_indexdata$krd
+  pmap(~ keydur(keyrates,..1,..2,..3,..4,..5)) -> emu_indexdata$krd
 
 #' add krd contrib
 # emu_indexdata %>% mutate(wkrd = map(krd, ~ .x *wgt )) -> emu_indexdata
