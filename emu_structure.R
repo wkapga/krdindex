@@ -9,6 +9,7 @@ library(knitr)
 library(janitor)
 library(xlsx)
 library(keyrateduration)
+library(XLConnect)
 
 
 #' keyrates
@@ -21,7 +22,7 @@ if (R.Version()$os == "linux-gnu") {
   path_indexfiles <- "/home/wkapga/thinclient_drives/Z:/jpm/Kursversorgung/Jpm/Done"
 } else {
   path_indexfiles <- "//webmethodsprod/mlw/jpm/Kursversorgung/Jpm/Done"
-  path_export <- "K:\AM\GFI\Allgemein\BM\jpm\structure\"
+  path_export <- "K:/AM/GFI/Allgemein/BM/jpm/structure/"
 }
 
 
@@ -30,10 +31,11 @@ indeximp <- import_current_index(path_indexfiles)
 indexdata <- indeximp[[2]]
 date_of_index <- indeximp[[1]]
 
-
+index2xls(indexdata,paste0(path_export,"EMU.xlsx"),keyrates,emu_countries)
 
 index2xls <- function(indexdata,xlsfilename,keyrates, countries,maturities) {
   
+  # --- Index Calculations per bond
   #' EMU Countries only
   emu_indexdata <- indexdata[[2]] %>% filter(Country %in% emu_countries)# %>% group_by(ISIN)
   
@@ -53,8 +55,12 @@ index2xls <- function(indexdata,xlsfilename,keyrates, countries,maturities) {
   emu_indexdata %>% select(ttm,Coupon,Yield,Freq,`Mac Dur`,ISIN) %>% 
     pmap(~ keydur(keyrates,..1,..2,..3,..4,..5)) -> emu_indexdata$krd
   
-  #' add krd contrib
-  # emu_indexdata %>% mutate(wkrd = map(krd, ~ .x *wgt )) -> emu_indexdata
+  # --- export to xlsx
+  
+  wb = loadWorkbook(xlsfilename)
+  createSheet(wb, sheetName = "T1")
+  writeWorksheet(wb, indexdata[[1]],"T1")
+  saveWorkbook(wb)
   
   #' weights by country
   emu_indexdata %>% group_by(Country) %>% summarize((100*sum(wgt)))
@@ -71,10 +77,6 @@ index2xls <- function(indexdata,xlsfilename,keyrates, countries,maturities) {
   
   emu_indexdata %>% select(Country,ISIN,krd,wgt) %>% unnest() %>% 
     group_by(Country,kr) %>% summarize(dur = sum(val*wgt)) %>% 
-    spread(kr,dur) %>% adorn_totals() -> aa
+    spread(kr,dur) %>% adorn_totals() 
   
-  aa %>% kable(digits=2)
-  
-  
-  write_excel_csv(aa,"/home/wkapga/thinclient_drives/G:/RSI/wkapga/tmp_krdindex1.csv")
 }
