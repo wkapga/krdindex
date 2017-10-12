@@ -4,7 +4,8 @@
 #' date: " 2017"
 #' ---
 
-library(tidyverse)
+library(purrr)
+library(readr)
 library(stringr)
 
 
@@ -13,10 +14,11 @@ library(stringr)
 
 
 import_current_index <- function(path_indexfiles) {
+  #' get file list 
   list_indexfiles <- list.files(path = path_indexfiles,pattern="GBROAD") 
 
   #' extract dates a la 20140505 and find position of highest (newest) date
-  i <-  list_indexfiles %>% str_extract_all("\\d{8}") %>%  unlist() %>% which.max -> i
+  i <-  list_indexfiles %>% str_extract_all("\\d{8}") %>%  unlist() %>% which.max 
 
   #' read this file
   indexdata <- 
@@ -26,5 +28,5 @@ import_current_index <- function(path_indexfiles) {
   date_of_index <- file.path(path_indexfiles,list_indexfiles[i]) %>% 
       read.csv(nrows=1,header=FALSE) %>%   paste(.) %>% tail(1) %>% as.Date("%Y%m%d")
 
-  return(date_of_index, indexdata )
+  return(list(date_of_index, indexdata) )
 }

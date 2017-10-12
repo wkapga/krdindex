@@ -11,9 +11,13 @@ library(keyrateduration)
 #' keyrates
 keyrates <- c(2,5,7,10,15,30,100)
 #' path
-path_indexfiles <- "/home/wkapga/thinclient_drives/Z:/jpm/Kursversorgung/Jpm/Done"
-#' get file list 
+if (R.Version()$os == "linux-gnu") {
+  path_indexfiles <- "/home/wkapga/thinclient_drives/Z:/jpm/Kursversorgung/Jpm/Done"
+} else {
+  path_indexfiles <- "//webmethodsprod/mlw/jpm/Kursversorgung/Jpm/Done"
+}
 
+indexdata <- import_current_index(path_indexfiles)
 
 
 #' EMU Countries
