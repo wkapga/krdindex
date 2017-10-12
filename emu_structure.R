@@ -17,8 +17,11 @@ if (R.Version()$os == "linux-gnu") {
   path_indexfiles <- "//webmethodsprod/mlw/jpm/Kursversorgung/Jpm/Done"
 }
 
-indexdata <- import_current_index(path_indexfiles)
 
+indeximp <- import_current_index(path_indexfiles)
+
+indexdata <- indeximp[[2]]
+date_of_index <- indeximp[[1]]
 
 #' EMU Countries
 emu_countries <- c("AT","BE","FR","FI","DE","NL","IT","ES","IE","PT","GR")
