@@ -1,6 +1,9 @@
 
 source("import.R")
 
+library(tidyr)
+library(purrr)
+library(dplyr)
 library(lubridate)
 library(knitr)
 library(janitor)
