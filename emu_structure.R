@@ -28,16 +28,18 @@ if (R.Version()$os == "linux-gnu") {
 
 indeximp <- import_current_index(path_indexfiles)
 
-indexdata <- indeximp[[2]]
-date_of_index <- indeximp[[1]]
 
-index2xls(indexdata,paste0(path_export,"EMU.xlsx"),keyrates,emu_countries)
+
+index2xls(indeximp,paste0(path_export,"EMU.xlsx"),keyrates,emu_countries)
 
 index2xls <- function(indexdata,xlsfilename,keyrates, countries,maturities) {
-  
+
+  indexdata <- indeximp[[2]]
+  date_of_index <- indeximp[[1]]
+    
   # --- Index Calculations per bond
   #' EMU Countries only
-  emu_indexdata <- indexdata[[2]] %>% filter(Country %in% emu_countries)# %>% group_by(ISIN)
+  emu_indexdata <- indexdata %>% filter(Country %in% emu_countries)# %>% group_by(ISIN)
   
   #' calc maturity dates
   lct <- Sys.getlocale("LC_TIME")
@@ -59,7 +61,7 @@ index2xls <- function(indexdata,xlsfilename,keyrates, countries,maturities) {
   
   wb = loadWorkbook(xlsfilename)
   createSheet(wb, sheetName = "T1")
-  writeWorksheet(wb, indexdata[[1]],"T1")
+  writeWorksheet(wb, date_of_index,"T1")
   saveWorkbook(wb)
   
   #' weights by country
