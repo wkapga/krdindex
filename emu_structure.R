@@ -99,8 +99,10 @@ keyrates <- c(2,5,7,10,15,30,100)
 #' EMU Countries
 emu_countries <- c("AT","BE","FR","FI","DE","NL","IT","ES","IE","PT","GR")
 
-#' read index from network drive
-indeximp <- import_current_index(path_indexfiles) %>% indexaddcalcs()
+#' read index from network drive if not in environment (helps w/ debug)
+if ( ("indeximp" %in% ls() ) == FALSE) {
+  indeximp <- import_current_index(path_indexfiles) %>% indexaddcalcs()
+}
 
 
 #' generate report to xlsx
