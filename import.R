@@ -24,6 +24,8 @@ import_current_index <- function(path_indexfiles) {
   indexdata <- 
     file.path(path_indexfiles,list_indexfiles[i]) %>%  read_csv(skip=1)
 
+  indexdata <- indexdata %>% filter( !is.na(Price) ) # get rid of disclaimer
+  
   #' get date of index from 1st row of file
   date_of_index <- file.path(path_indexfiles,list_indexfiles[i]) %>% 
       read.csv(nrows=1,header=FALSE) %>%   paste(.) %>% tail(1) %>% as.Date("%Y%m%d")
