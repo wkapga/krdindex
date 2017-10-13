@@ -49,7 +49,7 @@ xls_push_tibble_to_new_ws <- function(dd,wb,sheet){
   writeWorksheet(wb, dd,sheet)
 }
 
-index2xls <- function(indexdata,xlsfilename,keyrates, countries,maturities) {
+index2xls <- function(indeximp,xlsfilename,keyrates, countries,maturities) {
   
   indexdata <- indeximp[[2]]
   date_of_index <- indeximp[[1]]
