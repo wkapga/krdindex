@@ -59,18 +59,20 @@ index2xls <- function(indexdata,xlsfilename,keyrates, countries,maturities) {
   wb = loadWorkbook(xlsfilename) 
   
   createSheet(wb, "T1")
-  writeWorksheet(wb, date_of_index,"T1")
+  writeWorksheet(wb, date_of_index,"date")
  
   
   #' weights by country
   emu_indexdata %>% group_by(Country) %>% summarize((100*sum(wgt))) %>% 
-    writeWorksheet(wb, . ,"T1")
+    writeWorksheet(wb, . ,"weights")
   
   #' duration
   emu_indexdata %>% summarize( dur = sum( wgt*`Mac Dur`) )
   
   #' duration by country
-  emu_indexdata %>% group_by(Country) %>% summarize( dur = sum(wgt*`Mac Dur`) )
+  emu_indexdata %>% group_by(Country) %>% 
+    summarize( dur = sum(wgt*`Mac Dur`) ) %>% adorn_totals() %>% 
+    writeWorksheet(wb, . ,"Dur_by_Country")
   
   #' key rate duration by country
   # emu_indexdata %>% select(Country,ISIN,krd,wgt) %>% unnest() %>% 
@@ -78,8 +80,10 @@ index2xls <- function(indexdata,xlsfilename,keyrates, countries,maturities) {
   
   emu_indexdata %>% select(Country,ISIN,krd,wgt) %>% unnest() %>% 
     group_by(Country,kr) %>% summarize(dur = sum(val*wgt)) %>% 
-    spread(kr,dur) %>% adorn_totals() 
+    spread(kr,dur) %>% adorn_totals()  %>% 
+    writeWorksheet(wb, . ,"KeyDur_by_Country")
   
+    
   saveWorkbook(wb)
   
 }
