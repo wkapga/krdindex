@@ -7,15 +7,10 @@ library(dplyr)
 library(lubridate)
 library(knitr)
 library(janitor)
-library(xlsx)
+#library(xlsx)
 library(keyrateduration)
 library(XLConnect)
 
-
-#' keyrates
-keyrates <- c(2,5,7,10,15,30,100)
-#' EMU Countries
-emu_countries <- c("AT","BE","FR","FI","DE","NL","IT","ES","IE","PT","GR")
 
 #' path
 if (R.Version()$os == "linux-gnu") {
@@ -25,21 +20,10 @@ if (R.Version()$os == "linux-gnu") {
   path_export <- "K:/AM/GFI/Allgemein/BM/jpm/structure/"
 }
 
-
-indeximp <- import_current_index(path_indexfiles)
-
-
-
-index2xls(indeximp,paste0(path_export,"EMU.xlsx"),keyrates,emu_countries)
-
-index2xls <- function(indexdata,xlsfilename,keyrates, countries,maturities) {
-
-  indexdata <- indeximp[[2]]
+indexaddcalcs <- function(indexdata){
+  emu_indexdata <- indeximp[[2]]
   date_of_index <- indeximp[[1]]
-    
-  # --- Index Calculations per bond
-  #' EMU Countries only
-  emu_indexdata <- indexdata %>% filter(Country %in% emu_countries)# %>% group_by(ISIN)
+  
   
   #' calc maturity dates
   lct <- Sys.getlocale("LC_TIME")
@@ -57,15 +41,30 @@ index2xls <- function(indexdata,xlsfilename,keyrates, countries,maturities) {
   emu_indexdata %>% select(ttm,Coupon,Yield,Freq,`Mac Dur`,ISIN) %>% 
     pmap(~ keydur(keyrates,..1,..2,..3,..4,..5)) -> emu_indexdata$krd
   
-  # --- export to xlsx
+  return(list(date_of_index, emu_indexdata))
+}
+
+
+index2xls <- function(indexdata,xlsfilename,keyrates, countries,maturities) {
   
-  wb = loadWorkbook(xlsfilename)
-  createSheet(wb, sheetName = "T1")
+  indexdata <- indeximp[[2]]
+  date_of_index <- indeximp[[1]]
+  
+  # --- Index Calculations per bond
+  #' EMU Countries only
+  emu_indexdata <- indexdata %>% filter(Country %in% emu_countries)# %>% group_by(ISIN)
+  
+  # --- export to xlsx
+  #' open worksheet TODO: check for missing file
+  wb = loadWorkbook(xlsfilename) 
+  
+  createSheet(wb, "T1")
   writeWorksheet(wb, date_of_index,"T1")
-  saveWorkbook(wb)
+ 
   
   #' weights by country
-  emu_indexdata %>% group_by(Country) %>% summarize((100*sum(wgt)))
+  emu_indexdata %>% group_by(Country) %>% summarize((100*sum(wgt))) %>% 
+    writeWorksheet(wb, . ,"T1")
   
   #' duration
   emu_indexdata %>% summarize( dur = sum( wgt*`Mac Dur`) )
@@ -81,4 +80,21 @@ index2xls <- function(indexdata,xlsfilename,keyrates, countries,maturities) {
     group_by(Country,kr) %>% summarize(dur = sum(val*wgt)) %>% 
     spread(kr,dur) %>% adorn_totals() 
   
+  saveWorkbook(wb)
+  
 }
+
+
+#' keyrates
+keyrates <- c(2,5,7,10,15,30,100)
+#' EMU Countries
+emu_countries <- c("AT","BE","FR","FI","DE","NL","IT","ES","IE","PT","GR")
+
+#' read index from network drive
+indeximp <- import_current_index(path_indexfiles) %>% indexaddcalcs()
+
+
+#' generate report to xlsx
+index2xls(indeximp,paste0(path_export,"EMU.xlsx"),keyrates,emu_countries)
+
+
