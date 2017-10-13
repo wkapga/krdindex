@@ -44,6 +44,10 @@ indexaddcalcs <- function(indexdata){
   return(list(date_of_index, emu_indexdata))
 }
 
+xls_push_tibble_to_new_ws <- function(dd,wb,sheet){
+  createSheet(wb, sheet)
+  writeWorksheet(wb, dd,sheet)
+}
 
 index2xls <- function(indexdata,xlsfilename,keyrates, countries,maturities) {
   
@@ -58,13 +62,14 @@ index2xls <- function(indexdata,xlsfilename,keyrates, countries,maturities) {
   #' open worksheet TODO: check for missing file
   wb = loadWorkbook(xlsfilename) 
   
-  createSheet(wb, "T1")
-  writeWorksheet(wb, date_of_index,"date")
- 
+#  createSheet(wb, "date")
+#  writeWorksheet(wb, date_of_index,"date")
+  xls_push_tibble_to_new_ws(date_of_index,wb,"date")
   
   #' weights by country
-  emu_indexdata %>% group_by(Country) %>% summarize((100*sum(wgt))) %>% 
-    writeWorksheet(wb, . ,"weights")
+  createSheet(wb, "date")
+    emu_indexdata %>% group_by(Country) %>% summarize((100*sum(wgt))) %>% 
+      xls_push_tibble_to_new_ws(wb,"weights")
   
   #' duration
   emu_indexdata %>% summarize( dur = sum( wgt*`Mac Dur`) )
@@ -72,7 +77,7 @@ index2xls <- function(indexdata,xlsfilename,keyrates, countries,maturities) {
   #' duration by country
   emu_indexdata %>% group_by(Country) %>% 
     summarize( dur = sum(wgt*`Mac Dur`) ) %>% adorn_totals() %>% 
-    writeWorksheet(wb, . ,"Dur_by_Country")
+    xls_push_tibble_to_new_ws(wb,"Dur_by_Country")
   
   #' key rate duration by country
   # emu_indexdata %>% select(Country,ISIN,krd,wgt) %>% unnest() %>% 
@@ -81,7 +86,7 @@ index2xls <- function(indexdata,xlsfilename,keyrates, countries,maturities) {
   emu_indexdata %>% select(Country,ISIN,krd,wgt) %>% unnest() %>% 
     group_by(Country,kr) %>% summarize(dur = sum(val*wgt)) %>% 
     spread(kr,dur) %>% adorn_totals()  %>% 
-    writeWorksheet(wb, . ,"KeyDur_by_Country")
+    xls_push_tibble_to_new_ws(wb,"KeyDur_by_Country")
   
     
   saveWorkbook(wb)
