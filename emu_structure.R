@@ -57,7 +57,7 @@ index2xls <- function(indeximp,xlsfilename,keyrates, countries,maturities) {
   # --- Index Calculations per bond
   #' EMU Countries only
   emu_indexdata <- indexdata %>% filter(Country %in% emu_countries)# %>% group_by(ISIN)
-  emu_indexdata <- mutate(wgt = wgt/sum(wgt) )
+  emu_indexdata <- emu_indexdata %>% mutate(wgt = wgt/sum(wgt) )
   
   # --- export to xlsx
   #' open worksheet TODO: check for missing file
