@@ -70,6 +70,7 @@ index2xls <- function(indeximp,xlsfilename,keyrates, countries,maturities) {
   #' weights by country
   createSheet(wb, "date")
     emu_indexdata %>% group_by(Country) %>% summarize(wgt = (100*sum(wgt))) %>% 
+      adorn_totals() %>%
       xls_push_tibble_to_new_ws(wb,"weights")
   
   #' duration
