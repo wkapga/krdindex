@@ -20,7 +20,7 @@ if (R.Version()$os == "linux-gnu") {
   path_export <- "K:/AM/GFI/Allgemein/BM/jpm/structure/"
 }
 
-indexaddcalcs <- function(indexdata){
+indexaddcalcs <- function(indeximp){
   emu_indexdata <- indeximp[[2]]
   date_of_index <- indeximp[[1]]
   
