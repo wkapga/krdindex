@@ -87,6 +87,14 @@ index2xls <- function(indeximp,xlsfilename,keyrates, countries,maturities) {
     arrange(Country,dur) %>% 
     xls_push_tibble_to_new_ws(wb,"Dur_by_Country_and_Bucket")
   
+  emu_indexdata %>% group_by(Country,`Mat Sect`) %>% 
+    summarize( dur = sum(wgt*`Mac Dur`), durcontrib = dur/sum(wgt) ) %>%
+    arrange(Country,dur) %>% select(Country,`Mat Sect`,dur) %>%
+    spread(`Mat Sect`,dur, drop =T) %>% select(c(1,2,4,5,6,3))%>% 
+    adorn_totals() %>% 
+    xls_push_tibble_to_new_ws(wb,"Dur_by_Country_and_Bucket2")
+  
+  
   #' key rate duration by country
   # emu_indexdata %>% select(Country,ISIN,krd,wgt) %>% unnest() %>% 
   #    group_by(Country,kr) %>% summarize(dur = sum(val*wgt)) %>% kable(digits=2)
