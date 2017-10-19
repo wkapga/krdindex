@@ -83,7 +83,9 @@ index2xls <- function(indeximp,xlsfilename,keyrates, countries,maturities) {
 
   #' duration by country and mat bucket
   emu_indexdata %>% group_by(Country,`Mat Sect`) %>%
-    summarize( durcontrib = sum(wgt*`Mac Dur`), dur = durcontrib/sum(wgt) ) %>% 
+    summarize( durcontrib = sum(wgt*`Mac Dur`), 
+               dur = durcontrib/sum(wgt) , 
+               sum(wgt) *100 ) %>% 
     arrange(Country,dur) %>% 
     xls_push_tibble_to_new_ws(wb,"Dur_by_Country_and_Bucket")
   
