@@ -114,8 +114,7 @@ index2xls <- function(indeximp,xlsfilename,keyrates, countries,maturities) {
 
 #' keyrates
 keyrates <- c(2,5,7,10,15,30,100)
-#' EMU Countries
-emu_countries <- c("AT","BE","FR","FI","DE","NL","IT","ES","IE","PT","GR")
+
 
 #' read index from network drive if not in environment (helps w/ debug)
 if ( ("indeximp" %in% ls() ) == FALSE) {
@@ -124,6 +123,12 @@ if ( ("indeximp" %in% ls() ) == FALSE) {
 
 
 #' generate report to xlsx
+#' EMU Countries
+emu_countries <- c("AT","BE","FR","FI","DE","NL","IT","ES","IE","PT","GR")
 index2xls(indeximp,paste0(path_export,"EMU.xlsx"),keyrates,emu_countries)
+
+emuIG_Countries <- emu_countries%>% .[emu_countries != "PT"]
+index2xls(indeximp,paste0(path_export,"EMU_IG.xlsx"),keyrates,emuIG_countries)
+
 
 
