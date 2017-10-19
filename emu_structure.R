@@ -106,7 +106,9 @@ index2xls <- function(indeximp,xlsfilename,keyrates, countries,maturities) {
     spread(kr,dur) %>% adorn_totals()  %>% 
     xls_push_tibble_to_new_ws(wb,"KeyDur_by_Country")
   
-  emu_indexdata %>% xls_push_tibble_to_new_ws(wb,"All_Bonds")
+  #' list of all bonds including krds
+  emu_indexdata  %>%  unnest() %>% spread(kr,val) %>% 
+    xls_push_tibble_to_new_ws(wb,"All_Bonds")
     
   saveWorkbook(wb)
   
