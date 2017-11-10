@@ -32,3 +32,21 @@ import_current_index <- function(path_indexfiles) {
 
   return(list(date_of_index, indexdata) )
 }
+
+import_current_index_iboxx <- function(path_indexfiles) {
+  #' get file list 
+  list_indexfiles <- list.files(path = path_indexfiles,pattern="iboxx_eur_eod_underlyings") 
+  
+  #' extract dates a la 20140505 and find position of highest (newest) date
+  i <-  list_indexfiles %>% str_extract_all("\\d{8}") %>%  unlist() %>% which.max 
+  
+  #' read this file
+  indexdata <- 
+    file.path(path_indexfiles,list_indexfiles[i]) %>%  read_csv
+  
+  date_of_index <- indexdata$Date %>% max 
+  
+  return(list(date_of_index, indexdata) )
+}
+
+
