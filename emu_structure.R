@@ -18,28 +18,40 @@ if (R.Version()$os == "linux-gnu") {
 } else {
   path_indexfiles <- "//webmethodsprod/mlw/jpm/Kursversorgung/Jpm/Done"
   path_export <- "K:/AM/GFI/Allgemein/BM/jpm/structure/"
+  path_indexfiles_iboxx <- "//webmethodsprod/mlw/indexprovider/iboxx/input/incoming/"
+  
 }
 
 indexaddcalcs <- function(indeximp){
   emu_indexdata <- indeximp[[2]]
   date_of_index <- indeximp[[1]]
   
+  if ( head(emu_indexdata$Date,1) > 0 ) then {
+    emu_indexdata <- emu_indexdata  %>% mutate(ttm = `Time To Maturity`)
+   
+    emu_indexdata <- emu_indexdata %>% mutate(wgt= ( (`Market Value`/sum(`Market Value`)) ) )
+    
+    emu_indexdata %>% select(ttm,Coupon,`Annual Yield`,`Coupon Frequency`,Duration,ISIN) %>% 
+      pmap(~ keydur(keyrates,..1,..2,..3,..4,..5)) -> emu_indexdata$krd
+    
+  } else {
+    #' calc maturity dates
+    lct <- Sys.getlocale("LC_TIME")
+    Sys.setlocale("LC_TIME", "C")
+    emu_indexdata <- emu_indexdata  %>% mutate( mat=as.Date(Maturity,"%d %B %Y")) 
+    Sys.setlocale("LC_TIME", lct)
+    
+    #' calc time till maturity in years
+    emu_indexdata <- emu_indexdata %>% mutate(ttm=interval(date_of_index, mat) / duration(num = 1, units = "years"))
+    
+    #' add wgt
+    emu_indexdata <- emu_indexdata %>% mutate(wgt= (`MVal-EUR MM`/sum(`MVal-EUR MM`)) )
+    
+    #' add krd
+    emu_indexdata %>% select(ttm,Coupon,Yield,Freq,`Mac Dur`,ISIN) %>% 
+      pmap(~ keydur(keyrates,..1,..2,..3,..4,..5)) -> emu_indexdata$krd
+  }
   
-  #' calc maturity dates
-  lct <- Sys.getlocale("LC_TIME")
-  Sys.setlocale("LC_TIME", "C")
-  emu_indexdata <- emu_indexdata  %>% mutate( mat=as.Date(Maturity,"%d %B %Y")) 
-  Sys.setlocale("LC_TIME", lct)
-  
-  #' calc time till maturity in years
-  emu_indexdata <- emu_indexdata %>% mutate(ttm=interval(date_of_index, mat) / duration(num = 1, units = "years"))
-  
-  #' add wgt
-  emu_indexdata <- emu_indexdata %>% mutate(wgt= (`MVal-EUR MM`/sum(`MVal-EUR MM`)) )
-  
-  #' add krd
-  emu_indexdata %>% select(ttm,Coupon,Yield,Freq,`Mac Dur`,ISIN) %>% 
-    pmap(~ keydur(keyrates,..1,..2,..3,..4,..5)) -> emu_indexdata$krd
   
   return(list(date_of_index, emu_indexdata))
 }
@@ -123,6 +135,10 @@ keyrates <- c(2,5,7,10,15,30,100)
 if ( ("indeximp" %in% ls() ) == FALSE) {
   indeximp <- import_current_index(path_indexfiles) %>% indexaddcalcs()
 }
+if ( ("indeximp_iboxx" %in% ls() ) == FALSE) {
+  indeximp_iboxx <- import_current_index(path_indexfiles) %>% indexaddcalcs()
+}
+
 
 
 #' generate report to xlsx
